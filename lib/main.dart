@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'screens/MyHome.dart';
+import 'core/theme/app_theme.dart';
+import 'features/appointments/presentation/appointment_dashboard.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AppointmentApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AppointmentApp extends StatelessWidget {
+  const AppointmentApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'Appointment Pro',
       debugShowCheckedModeBanner: false,
-      home: MyHome(),
+      theme: AppTheme.lightTheme,
+      home: const AppointmentDashboard(),
     );
   }
 }
