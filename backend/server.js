@@ -16,7 +16,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => console.error('Could not connect to MongoDB', err));
 
 // --- SMTP CONFIG ---
-// Use your actual SMTP details in .env (e.g., Gmail APP Password)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -59,7 +58,6 @@ app.post('/auth/register', async (req, res) => {
         const user = new User({ name, email, password: hashedPassword, role, verificationCode });
         await user.save();
 
-        // Send Email
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -108,6 +106,22 @@ app.post('/auth/login', async (req, res) => {
 });
 
 // --- APPOINTMENT ROUTES ---
+
+// NEW: Route to get appointment statistics for the doctor
+app.get('/appointments/stats/summary', async (req, res) => {
+    try {
+        const total = await Appointment.countDocuments();
+        const pending = await Appointment.countDocuments({ status: 'pending' });
+        const confirmed = await Appointment.countDocuments({ status: 'confirmed' });
+        const done = await Appointment.countDocuments({ status: 'done' });
+        const cancelled = await Appointment.countDocuments({ status: 'cancelled' });
+        
+        res.json({ total, pending, confirmed, done, cancelled });
+    } catch (err) {
+        res.status(500).json({ error: 'Error fetching stats' });
+    }
+});
+
 app.get('/appointments/:userId', async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
