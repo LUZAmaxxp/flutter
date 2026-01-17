@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
-import 'features/appointments/presentation/appointment_dashboard.dart';
+import 'features/auth/presentation/login_screen.dart';
 
 void main() {
   runApp(const AppointmentApp());
@@ -15,7 +15,7 @@ class AppointmentApp extends StatelessWidget {
       title: 'Appointment Pro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AppointmentDashboard(),
+      home: const LoginScreen(),
     );
   }
 }
