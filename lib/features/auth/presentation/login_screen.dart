@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/auth_repository.dart';
-import '../../appointments/presentation/appointment_dashboard.dart';
+import '../../../core/navigation/main_navigation.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -23,16 +23,16 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final user = await _authRepository.login(
+      final response = await _authRepository.login(
         _emailController.text,
         _passwordController.text,
       );
 
-      if (user != null) {
+      if (response != null) {
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const AppointmentDashboard()),
+            MaterialPageRoute(builder: (context) => const MainNavigation()),
           );
         }
       } else {
@@ -52,78 +52,88 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(32.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 60),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.calendar_today_rounded, size: 40, color: Colors.deepPurple),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'Welcome Back',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Colors.black,
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to manage your appointments',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  'Sign in to your account to continue',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 48),
                 TextFormField(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                  decoration: InputDecoration(
+                    labelText: 'Email Address',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  validator: (value) =>
-                      value?.contains('@') ?? false ? null : 'Invalid email',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                  ),
-                  validator: (value) =>
-                      (value?.length ?? 0) < 6 ? 'Password too short' : null,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Sign In'),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
                 const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account?"),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                        );
-                      },
-                      child: const Text('Sign Up'),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                  ],
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpScreen()));
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: "Don't have an account? ",
+                        style: TextStyle(color: Colors.grey[600]),
+                        children: const [
+                          TextSpan(
+                            text: 'Sign Up',
+                            style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

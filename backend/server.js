@@ -27,7 +27,7 @@ const appointmentSchema = new mongoose.Schema({
     title: String,
     description: String,
     dateTime: Date,
-    userId: String,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, default: 'pending' }
 });
 
@@ -73,15 +73,23 @@ app.get('/users/:id', async (req, res) => {
 });
 
 // --- APPOINTMENT ROUTES ---
-app.get('/appointments', async (req, res) => {
-    const appointments = await Appointment.find();
-    res.json(appointments);
+app.get('/appointments/:userId', async (req, res) => {
+    try {
+        const appointments = await Appointment.find({ userId: req.params.userId });
+        res.json(appointments);
+    } catch (err) {
+        res.status(500).json({ error: 'Error fetching appointments' });
+    }
 });
 
 app.post('/appointments', async (req, res) => {
-    const appointment = new Appointment(req.body);
-    await appointment.save();
-    res.status(201).json(appointment);
+    try {
+        const appointment = new Appointment(req.body);
+        await appointment.save();
+        res.status(201).json(appointment);
+    } catch (err) {
+        res.status(400).json({ error: 'Could not create appointment' });
+    }
 });
 
 const PORT = process.env.PORT || 3000;

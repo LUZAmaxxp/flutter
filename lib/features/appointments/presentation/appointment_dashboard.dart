@@ -21,43 +21,79 @@ class _AppointmentDashboardState extends State<AppointmentDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Appointments'),
-      ),
-      body: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, child) {
-          if (_controller.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (_controller.appointments.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text('No appointments yet', style: TextStyle(color: Colors.grey[600])),
-                ],
+      backgroundColor: const Color(0xFFF8F9FE),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFFF8F9FE),
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
+              title: const Text(
+                'Appointments',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
               ),
-            );
-          }
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.deepPurple.withOpacity(0.1),
+                  child: const Icon(Icons.notifications_none, color: Colors.deepPurple),
+                ),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: ListenableBuilder(
+              listenable: _controller,
+              builder: (context, child) {
+                if (_controller.isLoading) {
+                  return const SizedBox(
+                    height: 400,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: _controller.appointments.length,
-            itemBuilder: (context, index) {
-              final appointment = _controller.appointments[index];
-              return _buildAppointmentCard(appointment);
-            },
-          );
-        },
+                if (_controller.appointments.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 100),
+                  itemCount: _controller.appointments.length,
+                  itemBuilder: (context, index) {
+                    return _buildAppointmentCard(_controller.appointments[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _showBookingSheet(context),
-        label: const Text('New Appointment'),
-        icon: const Icon(Icons.add),
+        backgroundColor: Colors.deepPurple,
+        elevation: 4,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.only(top: 100),
+      child: Column(
+        children: [
+          Icon(Icons.calendar_today_outlined, size: 80, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          const Text('No upcoming sessions', style: TextStyle(color: Colors.grey, fontSize: 16)),
+        ],
       ),
     );
   }
@@ -66,42 +102,61 @@ class _AppointmentDashboardState extends State<AppointmentDashboard> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => const BookAppointmentSheet(),
     );
   }
 
   Widget _buildAppointmentCard(dynamic appointment) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.deepPurple.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.calendar_month_rounded, color: Colors.deepPurple),
           ),
-          child: const Icon(Icons.calendar_month, color: Colors.deepPurple),
-        ),
-        title: Text(
-          appointment.title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Text('${appointment.description}\n${appointment.dateTime}'),
-        trailing: _buildStatusChip(appointment.status.toString().split('.').last),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  appointment.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${appointment.description}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          _buildStatusChip(appointment.status.toString().split('.').last),
+        ],
       ),
     );
   }
 
   Widget _buildStatusChip(String status) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         status.toUpperCase(),
