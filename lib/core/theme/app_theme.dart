@@ -10,7 +10,7 @@ class AppTheme {
         secondary: const Color(0xFF625B71),
         surface: const Color(0xFFFEF7FF),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

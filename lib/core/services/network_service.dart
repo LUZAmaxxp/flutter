@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class NetworkService {
-  // Replace with your actual Better Auth / MongoDB API endpoint
-  static const String baseUrl = 'https://api.example.com'; 
+  // Pointing to your new local Node.js backend
+  static const String baseUrl = 'http://localhost:3000'; 
 
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
     final response = await http.post(
