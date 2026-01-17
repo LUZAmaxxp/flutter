@@ -18,7 +18,9 @@ mongoose.connect(process.env.MONGODB_URI)
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    bio: { type: String, default: 'No bio added yet' },
+    avatarUrl: { type: String, default: 'https://ui-avatars.com/api/?background=random' }
 });
 
 const appointmentSchema = new mongoose.Schema({
@@ -56,6 +58,17 @@ app.post('/auth/login', async (req, res) => {
         res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// --- USER ROUTES ---
+app.get('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: 'Error fetching profile' });
     }
 });
 
