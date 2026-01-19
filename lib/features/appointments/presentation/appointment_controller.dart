@@ -14,7 +14,6 @@ class AppointmentController extends ChangeNotifier {
   Future<void> loadAppointments() async {
     _isLoading = true;
     notifyListeners();
-
     _appointments = await _repository.getAppointments();
     
     _isLoading = false;

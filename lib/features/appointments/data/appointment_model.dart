@@ -30,7 +30,6 @@ class Appointment {
       ),
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'title': title,

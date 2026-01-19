@@ -21,7 +21,6 @@ class Follower {
 class FollowersService {
   Future<List<Follower>> fetchFollowers(String username) async {
     final response = await http.get(Uri.parse('https://api.github.com/users/$username/followers'));
-
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((e) => Follower.fromJson(e)).toList();

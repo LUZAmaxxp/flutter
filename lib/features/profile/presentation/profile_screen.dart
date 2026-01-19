@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
   final String userId; // Pass this from your auth state
-  
   const ProfileScreen({super.key, required this.userId});
 
   @override

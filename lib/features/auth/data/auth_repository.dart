@@ -2,7 +2,6 @@ import '../../../core/services/network_service.dart';
 
 class AuthRepository {
   final NetworkService _networkService = NetworkService();
-
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
       // Endpoint for Better Auth login

@@ -1,4 +1,5 @@
 import '../../../core/services/network_service.dart';
+
 import 'appointment_model.dart';
 
 class AppointmentRepository {
