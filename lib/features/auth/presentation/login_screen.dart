@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/auth_repository.dart';
 import '../../../core/navigation/main_navigation.dart';
+import '../../../core/services/auth_service.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,7 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      if (response != null) {
+      if (response != null && response['user'] != null) {
+        // Save user data globally
+        AuthService().setUser(response['user']);
+        
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -41,6 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       }
+    } catch (e) {
+       if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -110,7 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const SizedBox(
+                            width: 20, 
+                            height: 20, 
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          )
                         : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),

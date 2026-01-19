@@ -2,11 +2,25 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class NetworkService {
-  // Pointing to your new local Node.js backend
+  // Pointing to your local Node.js backend
   static const String baseUrl = 'http://localhost:3000'; 
 
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
     final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Request failed with status: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> patch(String endpoint, Map<String, dynamic> body) async {
+    final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),

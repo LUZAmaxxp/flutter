@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../features/appointments/presentation/appointment_dashboard.dart';
+import '../../features/appointments/presentation/doctor_dashboard.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../services/auth_service.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -11,11 +13,18 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+  final AuthService _authService = AuthService();
 
-  final List<Widget> _screens = [
-    const AppointmentDashboard(),
-    const ProfileScreen(userId: 'placeholder_id'), // We will fetch real ID later
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      _authService.isDoctor ? const DoctorDashboard() : const AppointmentDashboard(),
+      ProfileScreen(userId: _authService.userId ?? ''),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +34,11 @@ class _MainNavigationState extends State<MainNavigation> {
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
           ],
         ),
         child: BottomNavigationBar(
@@ -37,8 +50,16 @@ class _MainNavigationState extends State<MainNavigation> {
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
           ],
         ),
       ),

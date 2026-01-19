@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 import 'appointment_controller.dart';
-import '../../data/appointment_model.dart';
+import '../data/appointment_model.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -21,70 +21,71 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   }
 
   Future<void> _updateStatus(String id, String newStatus) async {
-    // We'll need to add this method to the controller/repository
-    // For now, let's assume it exists or we'll add it next
-    // await _controller.updateAppointmentStatus(id, newStatus);
-    _controller.loadAppointments(); // Refresh
+    final success = await _controller.updateAppointmentStatus(id, newStatus);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Status updated to $newStatus')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 140.0,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.deepPurple,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text('Doctor Portal', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              background: Container(color: Colors.deepPurple),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildWeeklySummary(),
-                  const SizedBox(height: 32),
-                  const Text('Incoming Appointments', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-          ListenableBuilder(
-            listenable: _controller,
-            builder: (context, child) {
-              if (_controller.isLoading) {
-                return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
-              }
+      body: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, child) {
+          if (_controller.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              if (_controller.appointments.isEmpty) {
-                return const SliverFillRemaining(child: Center(child: Text('No appointments found')));
-              }
-
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final appointment = _controller.appointments[index];
-                    return _buildDoctorAppointmentCard(appointment);
-                  },
-                  childCount: _controller.appointments.length,
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 140.0,
+                floating: false,
+                pinned: true,
+                backgroundColor: Colors.deepPurple,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: const Text('Doctor Portal', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  background: Container(color: Colors.deepPurple),
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildWeeklySummary(_controller.stats),
+                      const SizedBox(height: 32),
+                      const Text('Incoming Appointments', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+              if (_controller.appointments.isEmpty)
+                const SliverFillRemaining(child: Center(child: Text('No appointments found')))
+              else
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final appointment = _controller.appointments[index];
+                      return _buildDoctorAppointmentCard(appointment);
+                    },
+                    childCount: _controller.appointments.length,
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildWeeklySummary() {
+  Widget _buildWeeklySummary(Map<String, dynamic> stats) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -95,9 +96,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _summaryItem('Total', '12', Icons.calendar_month, Colors.blue),
-          _summaryItem('Pending', '5', Icons.pending_actions, Colors.orange),
-          _summaryItem('Done', '7', Icons.check_circle, Colors.green),
+          _summaryItem('Total', stats['total']?.toString() ?? '0', Icons.calendar_month, Colors.blue),
+          _summaryItem('Pending', stats['pending']?.toString() ?? '0', Icons.pending_actions, Colors.orange),
+          _summaryItem('Confirmed', stats['confirmed']?.toString() ?? '0', Icons.check_circle, Colors.green),
         ],
       ),
     );
@@ -138,7 +139,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           ),
           const SizedBox(height: 12),
           Text(appointment.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text('Patient: ${appointment.userId}', style: TextStyle(color: Colors.grey[600])),
+          Text('Patient: ${appointment.patientName ?? "Unknown"}', style: TextStyle(color: Colors.grey[600])),
           const SizedBox(height: 20),
           Row(
             children: [

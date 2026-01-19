@@ -4,7 +4,6 @@ class AuthRepository {
   final NetworkService _networkService = NetworkService();
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
-      // Endpoint for Better Auth login
       final response = await _networkService.post('/auth/login', {
         'email': email,
         'password': password,
@@ -15,12 +14,25 @@ class AuthRepository {
     }
   }
 
-  Future<bool> register(String email, String password, String name) async {
+  Future<bool> register(String email, String password, String name, {String role = 'client'}) async {
     try {
       await _networkService.post('/auth/register', {
         'email': email,
         'password': password,
         'name': name,
+        'role': role,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmail(String email, String code) async {
+    try {
+      await _networkService.post('/auth/verify', {
+        'email': email,
+        'code': code,
       });
       return true;
     } catch (e) {
