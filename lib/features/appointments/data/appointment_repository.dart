@@ -52,4 +52,13 @@ class AppointmentRepository {
       return false;
     }
   }
+
+  Future<List<dynamic>> getDoctors() async {
+    try {
+      final List<dynamic> response = await _networkService.get('/doctors');
+      return response;
+    } catch (e) {
+      return [];
+    }
+  }
 }

@@ -19,6 +19,18 @@ class AppointmentController extends ChangeNotifier {
   Map<String, dynamic> get stats => _stats;
   bool get isLoading => _isLoading;
 
+  List<dynamic> _doctors = [];
+  List<dynamic> get doctors => _doctors;
+
+  Future<void> loadDoctors() async {
+    _isLoading = true;
+    notifyListeners();
+    _doctors = await _repository.getDoctors();
+    _isLoading = false;
+    notifyListeners();
+  }
+
+
   Future<void> loadAppointments() async {
     _isLoading = true;
     notifyListeners();

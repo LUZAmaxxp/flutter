@@ -4,7 +4,9 @@ import '../appointment_controller.dart';
 import '../../data/appointment_model.dart';
 
 class BookAppointmentSheet extends StatefulWidget {
-  const BookAppointmentSheet({super.key});
+  final String doctorId;
+
+  const BookAppointmentSheet({super.key, required this.doctorId});
 
   @override
   State<BookAppointmentSheet> createState() => _BookAppointmentSheetState();
@@ -62,6 +64,7 @@ class _BookAppointmentSheetState extends State<BookAppointmentSheet> {
       description: _descController.text,
       dateTime: fullDateTime,
       userId: '', // Set by repository
+      doctorId: widget.doctorId,
       patientName: _nameController.text,
       age: int.tryParse(_ageController.text),
       physicalPain: _painController.text,

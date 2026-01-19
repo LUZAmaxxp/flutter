@@ -6,7 +6,9 @@ class Appointment {
   final String description;
   final DateTime dateTime;
   final String userId;
+  final String? doctorId;
   final String? patientName;
+  final String? doctorName;
   final int? age;
   final String? physicalPain;
   final String? otherInfo;
@@ -18,7 +20,9 @@ class Appointment {
     required this.description,
     required this.dateTime,
     required this.userId,
+    this.doctorId,
     this.patientName,
+    this.doctorName,
     this.age,
     this.physicalPain,
     this.otherInfo,
@@ -32,7 +36,9 @@ class Appointment {
       description: json['description'] ?? '',
       dateTime: DateTime.parse(json['dateTime']),
       userId: json['userId'] is Map ? json['userId']['_id'] : (json['userId'] ?? ''),
+      doctorId: json['doctorId'] is Map ? json['doctorId']['_id'] : (json['doctorId'] ?? ''),
       patientName: json['patientName'] ?? (json['userId'] is Map ? json['userId']['name'] : null),
+      doctorName: json['doctorName'] ?? (json['doctorId'] is Map ? json['doctorId']['name'] : null),
       age: json['age'],
       physicalPain: json['physicalPain'],
       otherInfo: json['otherInfo'],
@@ -49,6 +55,7 @@ class Appointment {
       'description': description,
       'dateTime': dateTime.toIso8601String(),
       'userId': userId,
+      'doctorId': doctorId,
       'patientName': patientName,
       'age': age,
       'physicalPain': physicalPain,

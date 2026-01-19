@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['client', 'doctor'], default: 'client' },
     isVerified: { type: Boolean, default: false },
     verificationCode: String,
+    
+    // NEW DOCTOR FIELDS
+    specialization: { type: String, default: 'General Practitioner' },
+    experience: { type: Number, default: 0 },
+    rating: { type: Number, default: 4.5 },
     bio: { type: String, default: 'No bio added yet' },
     avatarUrl: { type: String, default: 'https://ui-avatars.com/api/?background=random' }
 });
@@ -40,8 +45,10 @@ const appointmentSchema = new mongoose.Schema({
     title: String,
     description: String,
     dateTime: Date,
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Patient
+    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Doctor
     patientName: String,
+    doctorName: String,
     age: Number,
     physicalPain: String,
     otherInfo: String,
@@ -54,11 +61,18 @@ const Appointment = mongoose.model('Appointment', appointmentSchema);
 // --- AUTH ROUTES ---
 app.post('/auth/register', async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, specialization } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         
-        const user = new User({ name, email, password: hashedPassword, role, verificationCode });
+        const user = new User({ 
+            name, 
+            email, 
+            password: hashedPassword, 
+            role, 
+            verificationCode,
+            specialization: specialization || 'General Practitioner'
+        });
         await user.save();
 
         const mailOptions = {
@@ -101,15 +115,30 @@ app.post('/auth/login', async (req, res) => {
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
         res.json({ 
             token, 
-            user: { id: user._id, name: user.name, email: user.email, role: user.role } 
+            user: { 
+                id: user._id, 
+                name: user.name, 
+                email: user.email, 
+                role: user.role,
+                specialization: user.specialization 
+            } 
         });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// --- APPOINTMENT ROUTES ---
+// --- DOCTOR ROUTES ---
+app.get('/doctors', async (req, res) => {
+    try {
+        const doctors = await User.find({ role: 'doctor', isVerified: true }).select('-password');
+        res.json(doctors);
+    } catch (err) {
+        res.status(500).json({ error: 'Error fetching doctors' });
+    }
+});
 
+// --- APPOINTMENT ROUTES ---
 app.get('/appointments/stats/summary', async (req, res) => {
     try {
         const total = await Appointment.countDocuments();
@@ -129,7 +158,7 @@ app.get('/appointments/:userId', async (req, res) => {
         const user = await User.findById(req.params.userId);
         let appointments;
         if (user.role === 'doctor') {
-            appointments = await Appointment.find().populate('userId', 'name email');
+            appointments = await Appointment.find({ doctorId: req.params.userId }).populate('userId', 'name email');
         } else {
             appointments = await Appointment.find({ userId: req.params.userId });
         }
@@ -151,8 +180,14 @@ app.patch('/appointments/:id/status', async (req, res) => {
 
 app.post('/appointments', async (req, res) => {
     try {
-        const user = await User.findById(req.body.userId);
-        const appointmentData = { ...req.body, patientName: user.name };
+        const patient = await User.findById(req.body.userId);
+        const doctor = await User.findById(req.body.doctorId);
+        
+        const appointmentData = { 
+            ...req.body, 
+            patientName: patient.name,
+            doctorName: doctor ? doctor.name : 'Unknown Doctor'
+        };
         const appointment = new Appointment(appointmentData);
         await appointment.save();
         res.status(201).json(appointment);
