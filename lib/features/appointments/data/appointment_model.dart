@@ -6,7 +6,10 @@ class Appointment {
   final String description;
   final DateTime dateTime;
   final String userId;
-  final String? patientName; // Added field
+  final String? patientName;
+  final int? age;
+  final String? physicalPain;
+  final String? otherInfo;
   final AppointmentStatus status;
 
   Appointment({
@@ -16,23 +19,30 @@ class Appointment {
     required this.dateTime,
     required this.userId,
     this.patientName,
+    this.age,
+    this.physicalPain,
+    this.otherInfo,
     this.status = AppointmentStatus.pending,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
-      id: json['_id'] ?? json['id'] ?? '', // Handle MongoDB _id
+      id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       dateTime: DateTime.parse(json['dateTime']),
       userId: json['userId'] is Map ? json['userId']['_id'] : (json['userId'] ?? ''),
       patientName: json['patientName'] ?? (json['userId'] is Map ? json['userId']['name'] : null),
+      age: json['age'],
+      physicalPain: json['physicalPain'],
+      otherInfo: json['otherInfo'],
       status: AppointmentStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => AppointmentStatus.pending,
       ),
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -40,6 +50,9 @@ class Appointment {
       'dateTime': dateTime.toIso8601String(),
       'userId': userId,
       'patientName': patientName,
+      'age': age,
+      'physicalPain': physicalPain,
+      'otherInfo': otherInfo,
       'status': status.toString().split('.').last,
     };
   }

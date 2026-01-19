@@ -42,6 +42,9 @@ const appointmentSchema = new mongoose.Schema({
     dateTime: Date,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     patientName: String,
+    age: Number,
+    physicalPain: String,
+    otherInfo: String,
     status: { type: String, enum: ['pending', 'confirmed', 'cancelled', 'done'], default: 'pending' }
 });
 
@@ -107,7 +110,6 @@ app.post('/auth/login', async (req, res) => {
 
 // --- APPOINTMENT ROUTES ---
 
-// NEW: Route to get appointment statistics for the doctor
 app.get('/appointments/stats/summary', async (req, res) => {
     try {
         const total = await Appointment.countDocuments();

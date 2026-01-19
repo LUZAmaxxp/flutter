@@ -1,9 +1,5 @@
 import '../../../core/services/network_service.dart';
-<<<<<<< Updated upstream
-
-=======
 import '../../../core/services/auth_service.dart';
->>>>>>> Stashed changes
 import 'appointment_model.dart';
 
 class AppointmentRepository {

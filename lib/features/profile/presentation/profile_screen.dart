@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
-<<<<<<< Updated upstream
-  final String userId; // Pass this from your auth state
+  final String userId;
   const ProfileScreen({super.key, required this.userId});
-=======
-  const ProfileScreen({super.key, required String userId});
->>>>>>> Stashed changes
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +11,6 @@ class ProfileScreen extends StatelessWidget {
     final String displayName = authService.userName ?? 'User';
     final String displayEmail = authService.userEmail ?? 'No email available';
     
-    // Proper URL formatting for ui-avatars
     final String avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(displayName)}&size=120&background=6750A4&color=fff';
 
     return Scaffold(
