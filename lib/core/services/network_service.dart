@@ -40,7 +40,7 @@ class NetworkService {
     }
   }
 
-  Future<List<dynamic>> get(String endpoint) async {
+  Future<dynamic> get(String endpoint) async {
     final response = await http.get(Uri.parse('$baseUrl$endpoint'));
 
     if (response.statusCode == 200) {

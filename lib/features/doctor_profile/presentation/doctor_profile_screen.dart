@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../appointments/presentation/widgets/book_appointment_sheet.dart';
 
 class DoctorProfileScreen extends StatelessWidget {
@@ -8,155 +9,215 @@ class DoctorProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FE),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text('Dr. ${doctor['name']}', style: const TextStyle(color: Colors.black)),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildDetails(context),
-          ],
-        ),
+      // The background color is now handled by the global theme
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 250.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: theme.colorScheme.surface,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: _buildHeader(context),
+            ),
+          ),
+          SliverToBoxAdapter(child: _buildDetails(context)),
+        ],
       ),
       bottomNavigationBar: _buildBookingButton(context),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/300?u=${doctor['_id']}'),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Dr. ${doctor['name']}',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  doctor['specialization'] ?? 'General Specialist',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 8),
-                const Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.orange, size: 18),
-                    Text('4.8 (234 reviews)', style: TextStyle(fontSize: 14)),
-                  ],
-                ),
-              ],
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 60, 24, 24), // Adjust top padding for app bar
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage('https://i.pravatar.cc/300?u=${doctor['_id']}'),
             ),
-          ),
-        ],
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Dr. ${doctor['name']}',
+                    style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    doctor['specialization'] ?? 'General Specialist',
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.secondary),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.star_rounded, color: Colors.amber, size: 20),
+                      const SizedBox(width: 4),
+                      Text(
+                        '4.8 (234 reviews)',
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.secondary),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDetails(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'About Doctor',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    final textTheme = Theme.of(context).textTheme;
+    
+    // Using AnimationLimiter to wrap all animated children
+    return AnimationLimiter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: AnimationConfiguration.toStaggeredList(
+            duration: const Duration(milliseconds: 375),
+            childAnimationBuilder: (widget) => SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: widget,
+              ),
+            ),
+            children: [
+              _buildInfoCard(
+                context,
+                title: 'About Doctor',
+                child: Text(
+                  'A dedicated and compassionate doctor with over 10 years of experience in providing quality healthcare. Known for a patient-centric approach and commitment to medical excellence.',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              _buildInfoCard(
+                context,
+                title: 'Qualifications',
+                child: Column(
+                  children: [
+                    _buildQualificationItem(context, 'MBBS from King\'s College, London (2010 M.D.)'),
+                    _buildQualificationItem(context, 'FRCS from Royal College of Surgeons (2015)'),
+                  ],
+                ),
+              ),
+              _buildInfoCard(
+                context,
+                title: 'Patient Reviews',
+                child: Column(
+                  children: [
+                    _buildReviewItem(context, 'Alice', 'Very professional and caring. Highly recommended!'),
+                    _buildReviewItem(context, 'Bob', 'Great experience, the doctor was very thorough.'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24), // Spacer for the bottom
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'A dedicated and compassionate doctor with over 10 years of experience in providing quality healthcare. Known for a patient-centric approach and commitment to medical excellence.',
-            style: TextStyle(fontSize: 15, color: Colors.black54, height: 1.5),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Qualifications',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _buildQualificationItem('MBBS from King\'s College, London (2010)'),
-          _buildQualificationItem('FRCS from Royal College of Surgeons (2015)'),
-          const SizedBox(height: 24),
-          const Text(
-            'Patient Reviews',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _buildReviewItem('Alice', 'Very professional and caring. Highly recommended!'),
-          _buildReviewItem('Bob', 'Great experience, the doctor was very thorough.'),
-        ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildInfoCard(BuildContext context, {required String title, required Widget child}) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
+    return Card(
+      // Card properties are now inherited from the global CardTheme
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: textTheme.titleMedium),
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildQualificationItem(String text) {
+  Widget _buildQualificationItem(BuildContext context, String text) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: Colors.deepPurple, size: 18),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 15))),
+          Icon(Icons.check_circle_outline_rounded, color: colorScheme.primary, size: 20),
+          const SizedBox(width: 16),
+          Expanded(child: Text(text, style: theme.textTheme.bodyLarge)),
         ],
       ),
     );
   }
 
-  Widget _buildReviewItem(String name, String review) {
+  Widget _buildReviewItem(BuildContext context, String name, String review) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))],
+        color: theme.scaffoldBackgroundColor, // A slightly different background for contrast
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 4),
-          Text(review, style: const TextStyle(color: Colors.black54)),
+          Text(name, style: textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Text(review, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.7))),
         ],
       ),
     );
   }
 
   Widget _buildBookingButton(BuildContext context) {
+    // The button now uses the style from ElevatedButtonThemeData
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: ElevatedButton(
         onPressed: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            backgroundColor: Colors.transparent,
+            backgroundColor: Colors.transparent, // Sheet has its own themeing
             builder: (context) => BookAppointmentSheet(doctorId: doctor['_id']),
           );
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          minimumSize: const Size(double.infinity, 56),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          elevation: 5,
-        ),
-        child: const Text('Book an Appointment', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        // The style is now inherited, but we can add specific text
+        child: const Text('Book an Appointment'),
       ),
     );
   }
